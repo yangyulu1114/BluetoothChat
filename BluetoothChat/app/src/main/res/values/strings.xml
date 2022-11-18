@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">BluetoothChat</string>
+    <string name="error_scanning_requires_permission">Scanning requires permission %s</string>
+</resources>
