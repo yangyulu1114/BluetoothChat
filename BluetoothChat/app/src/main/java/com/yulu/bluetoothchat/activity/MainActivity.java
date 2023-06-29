@@ -16,6 +16,10 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.mylibrary.BluetoothConnectionListener;
+import com.example.mylibrary.BluetoothException;
+import com.example.mylibrary.BluetoothSDK;
+import com.example.mylibrary.scan.BluetoothScanListener;
 import com.example.mylibrary.scan.ScanResult;
 import com.example.mylibrary.utils.BluetoothUtils;
 import com.yulu.bluetoothchat.R;
@@ -26,7 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @SuppressLint("MissingPermission")
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements BluetoothConnectionListener, BluetoothScanListener {
     private static final int REQUEST_PERMISSION = 1;
 
     private ListView mListView;
@@ -39,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        BluetoothSDK.initialize(this, this);
         PermissionUtils.requestPermissions(this, BluetoothUtils.getRequiredPermissions(), REQUEST_PERMISSION);
         Log.v("bush", String.format("version: %s", Build.VERSION.SDK_INT));
         mListView = findViewById(R.id.list);
@@ -67,11 +72,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void startScanBluetoothDevices() {
-//        try {
-//            mBluetoothChatHelper.startScan();
-//        } catch (BluetoothException e) {
-//            Log.e("bush", "startScan failed", e);
-//        }
+        try {
+            BluetoothSDK.startScan(this);
+        } catch (BluetoothException e) {
+            Log.e("bush", "startScan failed", e);
+        }
     }
 
     @Override
@@ -88,6 +93,54 @@ public class MainActivity extends AppCompatActivity {
             }
             onAllPermissionGranted();
         }
+    }
+
+    @Override
+    public void onScanStarted() {
+        mDevices.clear();
+        Log.v("bush", String.format("onScanStarted %s", Thread.currentThread().getName()));
+    }
+
+    @Override
+    public void onDeviceFound(BluetoothDevice device, int rssi) {
+        Log.v("bush", String.format("onDeviceFound %s, name=(%s), rssi=%s, %s", device.getAddress(), device.getName(), rssi, Thread.currentThread().getName()));
+        mDevices.add(new ScanResult(device, rssi));
+        mDeviceListAdapter.update(mDevices);
+    }
+
+    @Override
+    public void onScanStopped() {
+        Log.v("bush", "onScanStopped");
+    }
+
+    @Override
+    public void onScanFailed(Exception e) {
+        Log.v("bush", "onScanFailed", e);
+    }
+
+    @Override
+    public void onMessageReceived(BluetoothDevice device, String message) {
+
+    }
+
+    @Override
+    public void onMessageSent(BluetoothDevice device, String message) {
+
+    }
+
+    @Override
+    public void onSocketConnected(BluetoothDevice device) {
+
+    }
+
+    @Override
+    public void onConnectAccepted(BluetoothDevice device) {
+
+    }
+
+    @Override
+    public void onSocketError(Exception e) {
+
     }
 
 //    @Override
